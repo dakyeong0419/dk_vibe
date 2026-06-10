@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 저녁 운명의 데스티니 🍽️</title>
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --background-color: #f7f9fc;
+            --text-color: #2f3e46;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 { font-size: 1.8rem; color: #ff5252; margin-bottom: 10px; }
+        p { color: #777; margin-top: 0; }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background-color: #ff5252;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            box-shadow: 0 4px 10px rgba(78, 205, 196, 0.3);
+        }
+        .btn-secondary:hover { background-color: #3dbbb2; }
+
+        /* 화면 전환용 */
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 질문 페이지 */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 결과 페이지 */
+        .character { font-size: 5rem; margin: 20px 0; animation: bounce 1s infinite alternate; }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+        .menu-name { font-size: 2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; }
+        
+        .pros-cons {
+            text-align: left;
+            background: #fff5f5;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+        .pros-cons div { margin-bottom: 10px; }
+        .pros-cons strong { color: #c92a2a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="start-page" class="page active">
+        <div style="font-size: 4rem; margin-bottom: 10px;">🔮</div>
+        <h1>오늘 저녁 운명의 데스티니</h1>
+        <p>32개의 초고속 질문으로 당신의 위장이 원하는<br>진짜 메뉴(16종)를 찾아드립니다!</p>
+        <button class="btn" onclick="startTest()">테스트 시작하기 🚀</button>
+    </div>
+
+    <div id="question-page" class="page">
+        <div class="progress-bar"><div id="progress" class="progress"></div></div>
+        <div id="question-number" style="font-weight: bold; color: var(--secondary-color);">Q1 / 32</div>
+        <div id="question-text" class="question-text">질문 텍스트가 들어가는 곳</div>
+        <button class="btn" onclick="nextQuestion(1)">그렇다 👍</button>
+        <button class="btn btn-secondary" onclick="nextQuestion(0)">아니다 👎</button>
+    </div>
+
+    <div id="result-page" class="page">
+        <p>당신의 영혼이 부르짖는 메뉴는...</p>
+        <div id="result-character" class="character">🍗</div>
+        <div id="result-menu" class="menu-name">메뉴 이름</div>
+        
+        <div class="pros-cons">
+            <div id="result-pros"><strong>장점:</strong> 장점 텍스트</div>
+            <div id="result-cons"><strong>단점:</strong> 단점 텍스트</div>
+        </div>
+
+        <button class="btn" onclick="restartTest()">다시 고르기 🔄</button>
+    </div>
+</div>
+
+<script>
+    // 16개 결과 메뉴 데이터 (이모지 캐릭터, 장단점 포함)
+    const menus = [
+        { name: "삼겹살", emoji: "🐷", pros: "기분이 저기압일 땐 고기 앞으로! 소주 메이트.", cons: "온몸에 나 삼겹살 먹었소 광고하는 냄새." },
+        { name: "치킨", emoji: "🍗", pros: "대한민국 공식 영혼의 동반자. 호불호 없음.", cons: "다음 날 아침 체중계 위에서 밀려오는 배신감." },
+        { name: "떡볶이", emoji: "🌶️", pros: "스트레스 격파! 매콤달콤 탄수화물 폭탄의 행복.", cons: "다음 날 화장실과의 불타는 미팅 예약." },
+        { name: "초밥", emoji: "🍣", pros: "깔끔하고 고급스러운 한 끼. 나를 대접하는 느낌.", cons: "지갑이 순식간에 가벼워지는 마술을 보게 됨." },
+        { name: "짜장면&탕수육", emoji: "🐼", pros: "이삿날 아니어도 마성의 중독성. 한 입의 감동.", cons: "먹고 나면 30분 뒤 춘곤증 급의 졸음 밀려옴." },
+        { name: "김치찌개", emoji: "🥘", pros: "한국인 DNA 저격. 밥 두 공기 뚝딱 보장.", cons: "너무 익숙해서 가끔 외식하는 기분이 안 남." },
+        { name: "파스타", emoji: "🍝", pros: "인스타 감성 충만. 데이트하는 느낌 물씬.", cons: "돌려 막기 기술이 부족하면 포크질이 버거움." },
+        { name: "햄버거", emoji: "🍔", pros: "바쁜 현대인의 초고속 완전식품(탄단지 완벽?).", cons: "한 입에 예쁘게 먹기 불가능. 소스 대참사." },
+        { name: "쌀국수", emoji: "🍜", pros: "국물이 끝내줘요! 해장과 동시에 속이 편안함.", cons: "고수 헤이러들에게는 비누 맛 테러 주의보." },
+        { name: "마라탕", emoji: "🥵", pros: "혀끝을 때리는 짜릿함. 혈중 마라농도 완충.", cons: "위장에서 보내는 분노의 카운트다운." },
+        { name: "연어 샐러드", emoji: "🥗", pros: "다이어터의 마지막 자존심. 건강해지는 기분.", cons: "자기 전에 배고파서 라면 끓일 확률 99%." },
+        { name: "국밥", emoji: "🥣", pros: "뜨끈~하고 든든~하게 영혼까지 데워줌. 가성비 갑.", cons: "아재 입맛 소리 들을 수 있음(하지만 맛있죠?)." },
+        { name: "족발", emoji: "🐖", pros: "야들야들한 콜라겐 덩어리. 피부 미용 핑계 가능.", cons: "뼈 쓰레기 처리가 지구 종말급으로 귀찮음." },
+        { name: "카레", emoji: "🍛", pros: "한 솥 끓여두면 영원히 먹을 수 있는 자취생 친구.", cons: "치아 교정 중이라면 노란색 스마일 획득." },
+        { name: "돈가스", emoji: "🐷", pros: "바삭함의 끝판왕. 소스 찍먹 부먹 논쟁 유발잼.", cons: "입천장 까짐 주의. 다 먹어갈 때쯤 살짝 물림." },
+        { name: "낙지볶음", emoji: "🐙", pros: "기운 없는 자여, 낙지를 먹고 호랑이 기운을 내라!", cons: "매워서 땀 뻘뻘, 휴지 한 통 다 씀." }
+    ];
+
+    // 32개 간단한 질문 리스트 (가볍고 빠르게 답할 수 있는 질문)
+    const questions = [
+        "1. 지금 배가 고파서 쓰러지기 직전인가요?",
+        "2. 매콤한 음식을 생각하면 침이 고이나요?",
+        "3. 기름진 음식으로 위장에 기름칠을 하고 싶나요?",
+        "4. 오늘 숟가러보단 젓가락이나 포크를 더 쓰고 싶나요?",
+        "5. 따뜻한 국물이 절실하게 생각나나요?",
+        "6. 밥(쌀) 종류가 꼭 있어야 하나요?",
+        "7. 오늘 스트레스를 아주 심하게 받았나요?",
+        "8. 지갑 사정이 조금 여유로운 편인가요?",
+        "9. 혼자 먹는 혼밥인가요?",
+        "10. 인스타에 업로드할 만한 예쁜 비주얼을 원하나요?",
+        "11. 고기 종류는 무조건 옳다고 생각하나요?",
+        "12. 면 요리가 급격하게 당기나요?",
+        "13. 자극적인 것보단 담백하고 깔끔한 맛이 좋은가요?",
+        "14. 요리 조리 시간이 짧거나 빨리 나오는 게 중요한가요?",
+        "15. 설거지나 뒷정리가 귀찮은가요?",
+        "16. 오늘 날씨가 흐리거나 비가 오나요?",
+        "17. 해산물이나 생선 종류도 좋아하나요?",
+        "18. 아삭아삭한 식감이 당기나요?",
+        "19. 시원한 맥주나 소주 한 잔이 생각나나요?",
+        "20. 외국 특유의 향신료 맛에 거부감이 없나요?",
+        "21. 평소에 초딩 입맛이라는 소리를 자주 듣나요?",
+        "22. 건강을 생각해서 웰빙식을 먹어야 할 것 같나요?",
+        "23. 달콤한 맛이 가미된 음식을 원하나요?",
+        "24. 손으로 들고 먹거나 쌈을 싸 먹고 싶나요?",
+        "25. 가성비가 가장 중요한 요소인가요?",
+        "26. 씹는 맛(식감)이 강한 음식을 원하나요?",
+        "27. 오늘 점심에 면을 먹었나요?",
+        "28. 단짠단짠의 정석을 느끼고 싶나요?",
+        "29. 이국적인 음식을 먹어보고 싶나요?",
+        "30. 든든하게 먹고 푹 자고 싶은가요?",
+        "31. 탄수화물 폭탄이어도 행복하면 그만인가요?",
+        "32. 그냥 뭐가 되었든 지금 당장 결정장애를 끝내고 싶나요?"
+    ];
+
+    let currentIdx = 0;
+    let score = 0; // 답변의 성향을 누적할 점수
+
+    function startTest() {
+        currentIdx = 0;
+        score = 0;
+        showPage("question-page");
+        updateQuestion();
+    }
+
+    function updateQuestion() {
+        document.getElementById("question-number").innerText = `Q${currentIdx + 1} / ${questions.length}`;
+        document.getElementById("question-text").innerText = questions[currentIdx];
+        const progressPercent = ((currentIdx) / questions.length) * 100;
+        document.getElementById("progress").style.width = `${progressPercent}%`;
+    }
+
+    function nextQuestion(answer) {
+        // 답변 값에 따라 간단한 가중치 계산 (1층 개발용 매핑 알고리즘)
+        // 답변이 '그렇다(1)'이면 인덱스나 특정 난수를 더해 결과 분기 다양화
+        if (answer === 1) {
+            score += (currentIdx % 3) + 1; 
+        }
+
+        currentIdx++;
+
+        if (currentIdx < questions.length) {
+            updateQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        // 최종 점수를 기반으로 16개 메뉴 중 하나를 매칭 (0 ~ 15 인덱스)
+        const resultIndex = score % menus.length;
+        const finalMenu = menus[resultIndex];
+
+        document.getElementById("result-character").innerText = finalMenu.emoji;
+        document.getElementById("result-menu").innerText = finalMenu.name;
+        document.getElementById("result-pros").innerHTML = `<strong>장점:</strong> ${finalMenu.pros}`;
+        document.getElementById("result-cons").innerHTML = `<strong>단점:</strong> ${finalMenu.cons}`;
+
+        showPage("result-page");
+    }
+
+    function restartTest() {
+        showPage("start-page");
+    }
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+    }
+</script>
+
+</body>
+</html>
